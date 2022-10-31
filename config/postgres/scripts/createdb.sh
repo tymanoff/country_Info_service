@@ -1,0 +1,10 @@
+#!/bin/sh
+
+psql << EOF
+
+CREATE DATABASE $DB_NAME OWNER $DBMIGRATION_USER;
+GRANT ALL PRIVILEGES ON DATABASE $DB_NAME TO $DBMIGRATION_USER;
+
+EOF
+
+pg_restore -d $DB_NAME /docker-entrypoint-initdb.d/$DB_NAME.dump
