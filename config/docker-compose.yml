@@ -1,0 +1,28 @@
+version: '3.4'
+
+services:
+  pg_db:
+    image: 'postgres:9.6.12-alpine'
+    container_name: postgres_container
+    environment:
+      - DB_NAME=country_info_db
+      - PGDATA=/var/lib/postgresql/data/country_info_db
+      - POSTGRES_PASSWORD=123456
+      - TABLEFUNC_SCHEMA=functions
+      - DBMIGRATION_USER=postgres
+      - DBMIGRATION_PASS=123456
+    volumes:
+      - ./postgres/scripts:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "5432:5432"
+    restart: always
+
+  #Nginx Service
+  web:
+    image: nginx:alpine
+    container_name: webserver
+    build: ./nginx/
+    ports:
+      - "9000:80"
+    volumes:
+      - ./nginx/sites-enabled:/etc/nginx/sites-enabled
