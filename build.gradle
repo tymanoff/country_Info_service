@@ -1,8 +1,11 @@
+import io.mateo.cxf.codegen.wsdl2java.Wsdl2Java
+
 plugins {
 	id 'org.springframework.boot' version '2.7.5'
 	id 'io.spring.dependency-management' version '1.0.15.RELEASE'
 	id 'java'
 	id 'checkstyle'
+	id "io.mateo.cxf-codegen" version "1.0.1"
 }
 
 group = 'ru.info'
@@ -28,8 +31,26 @@ dependencies {
 
 	implementation group: 'com.github.spotbugs', name: 'spotbugs-annotations', version: '4.7.3'
 	testImplementation group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: '2.7.5'
+
+	cxfCodegen "jakarta.xml.ws:jakarta.xml.ws-api:2.3.3"
+	cxfCodegen "jakarta.annotation:jakarta.annotation-api:1.3.5"
+	implementation 'javax.jws:javax.jws-api:1.1'
+
+	implementation group: 'org.slf4j', name: 'slf4j-api', version: '2.0.3'
 }
 
 tasks.named('test') {
 	useJUnitPlatform()
 }
+
+tasks.register("countryinfoserviceXmlGen", Wsdl2Java) {
+	toolOptions {
+		wsdl.set(file("${projectDir}/src/main/resources/wsdl/countryinfoservice.xml"))
+		wsdlLocation.set("classpath:wsdl/countryinfoservice.xml")
+		outputDir.set(file("${buildDir}/generated/sources/wsdl"))
+		markGenerated.set(false)
+		bindingFiles.add("${projectDir}/src/main/resources/wsdl/countryinfoservice.xml")
+	}
+}
+
+compileJava.dependsOn(countryinfoserviceXmlGen)
