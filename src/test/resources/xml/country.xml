@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<FullCountryInfoResult xmlns="http://www.oorsprong.org/websamples.countryinfo">
+    <sISOCode>AD</sISOCode>
+    <sName>Andorra</sName>
+    <sCapitalCity>Andorra La Ville</sCapitalCity>
+    <sPhoneCode>371</sPhoneCode>
+    <sContinentCode>EU</sContinentCode>
+    <sCurrencyISOCode>EUR</sCurrencyISOCode>
+    <sCountryFlag>http://www.oorsprong.org/WebSamples.CountryInfo/Flags/Andorra.jpg</sCountryFlag>
+    <Languages>
+        <tLanguage>
+            <sISOCode>cat</sISOCode>
+            <sName>Catalan</sName>
+        </tLanguage>
+    </Languages>
+</FullCountryInfoResult>
+
+

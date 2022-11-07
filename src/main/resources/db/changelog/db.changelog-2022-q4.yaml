@@ -1,0 +1,13 @@
+databaseChangeLog:
+  - changeSet:
+      id: '20221206_2100_init_tables'
+      author: "a.tumanov"
+      changes:
+        - sqlFile:
+            path: 'changelog/changes/20221206_2100_init_tables.sql'
+            dbms: 'postgresql'
+            encoding: 'UTF-8'
+            endDelimited: ';'
+            relativeToChangelogFile: true
+            splitStatements: true
+            stripComments: true
