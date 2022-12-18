@@ -1,0 +1,4 @@
+databaseChangeLog:
+  - include:
+      file: 'db.changelog-2022-q4.yaml'
+      relativeToChangelogFile: true
