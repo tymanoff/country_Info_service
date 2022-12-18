@@ -22,12 +22,12 @@ public class RouterService {
         if (BooleanUtils.isTrue(request.getCached())) {
             response = cachedRequestService.getFromCache(request);
             if (response == null) {
-                throw new CachedRequestNotFoundException(request);
+                throw new CachedRequestNotFoundException();
             }
         } else {
             response = countryRequestService.getCountryInfo(request);
             if (response == null) {
-                throw new CountryRequestServiceNotFoundException(request);
+                throw new CountryRequestServiceNotFoundException();
             }
 
             if (BooleanUtils.isNotTrue(request.getCached())) {

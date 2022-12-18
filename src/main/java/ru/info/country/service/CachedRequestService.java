@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.hash.Hashing;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.info.country.dto.RequestDto;
@@ -42,7 +41,7 @@ public class CachedRequestService {
         }
 
         if (cachedRequest.getExpiredDate().isBefore(LocalDateTime.now())) {
-            throw new CachedRequestExpiredDateException(request);
+            throw new CachedRequestExpiredDateException();
         }
 
         ResponseDto responseDto = new ResponseDto();
@@ -56,7 +55,6 @@ public class CachedRequestService {
         return responseDto;
     }
 
-    @SneakyThrows
     @Transactional
     public void putCached(RequestDto request, ResponseDto response) {
 
