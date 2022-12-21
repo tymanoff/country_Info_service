@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import ru.info.country.dto.RequestDto;
 import ru.info.country.dto.ResponseDto;
+import ru.info.country.exception.CustomException;
 import ru.info.country.service.RouterService;
 
 @RestController
@@ -16,6 +17,10 @@ public class CountryController {
     @PostMapping
     @ResponseBody
     public ResponseDto request(@RequestBody RequestDto request) {
-        return routerService.request(request);
+        try {
+            return routerService.request(request);
+        } catch (Exception e) {
+            throw new CustomException(request.getService(), request.getVersion(), e);
+        }
     }
 }

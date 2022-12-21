@@ -1,8 +1,10 @@
 package ru.info.country.exception;
 
 import lombok.Getter;
+import lombok.Setter;
 
 @Getter
+@Setter
 public class CustomException extends RuntimeException {
     private final String service;
     private final Integer version;

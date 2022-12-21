@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.oorsprong.websamples.TCountryInfo;
 import org.oorsprong.websamples_countryinfo.CountryInfoServiceSoapType;
+import org.springframework.boot.web.server.WebServerException;
 import org.springframework.stereotype.Service;
 import ru.info.country.country.CountryDetailsRequestNode;
 import ru.info.country.dto.RequestDto;
@@ -16,9 +17,14 @@ import ru.info.country.entity.CountryInfo;
 import ru.info.country.entity.Language;
 import ru.info.country.exception.CounterJsonProcessingException;
 import ru.info.country.exception.FieldIsNotValidException;
+import ru.info.country.exception.UnknownServiceException;
+import ru.info.country.exception.RequestCouldNotSendException;
+import ru.info.country.exception.ResponseTimeoutException;
 import ru.info.country.mapper.CountryMapper;
 import ru.info.country.mapper.LanguageMapper;
 
+import java.net.ConnectException;
+import java.net.SocketTimeoutException;
 import java.util.List;
 
 @Service
@@ -41,49 +47,68 @@ public class CountryRequestService {
             throw new CounterJsonProcessingException(ex);
         }
 
-        ResponseDto countryInfo;
+        JsonNode country;
         String isoCode = countryDetailsRequestNode.getIsoCode();
-        if (isoCode.equals(COUNTRY_ALL)) {
-            countryInfo = getListAllCountry(request);
+        if (StringUtils.isBlank(isoCode)) {
+            throw new FieldIsNotValidException();
+        } else if (isoCode.equals(COUNTRY_ALL)) {
+            country = getListAllCountry();
         } else {
-            countryInfo = getCountryInfo(request, isoCode);
+            country = getCountryInfo(isoCode);
         }
 
-        return countryInfo;
+        ResponseDto responseDto = new ResponseDto();
+        responseDto.setService(request.getService());
+        responseDto.setVersion(request.getVersion());
+        responseDto.setResponse(country);
+        return responseDto;
     }
 
-    private ResponseDto getCountryInfo(RequestDto request, String isoCode) {
-        if (StringUtils.isBlank(isoCode) || isoCode.length() != 2) {
-            throw new FieldIsNotValidException(request);
+    private JsonNode getCountryInfo(String isoCode) {
+        if (isoCode.length() != 2) {
+            throw new FieldIsNotValidException();
         }
 
-        TCountryInfo tCountryInfo = countryInfoServiceSoapType.fullCountryInfo(isoCode);
+        TCountryInfo tCountryInfo;
+        try {
+            tCountryInfo = countryInfoServiceSoapType.fullCountryInfo(isoCode);
+        } catch (WebServerException ex) {
+            extracted(ex);
+
+            throw new UnknownServiceException(ex);
+        }
         CountryInfo countryInfo = CountryMapper.MAPPER.convert(tCountryInfo);
         List<Language> languages = tCountryInfo.getLanguages().getTLanguage()
                 .stream()
                 .map(LanguageMapper.MAPPER::convert)
                 .toList();
         countryInfo.setLanguages(languages);
-        JsonNode node = objectMapper.valueToTree(countryInfo);
-        return getResponseDto(request, node);
+        return objectMapper.valueToTree(countryInfo);
     }
 
-    public ResponseDto getListAllCountry(RequestDto request) {
-        List<Country> countries = countryInfoServiceSoapType
-                .listOfCountryNamesByCode()
-                .getTCountryCodeAndName()
-                .stream()
-                .map(CountryMapper.MAPPER::convert)
-                .toList();
-        JsonNode node = objectMapper.valueToTree(countries);
-        return getResponseDto(request, node);
+    public JsonNode getListAllCountry() {
+        List<Country> countries;
+        try {
+            countries = countryInfoServiceSoapType
+                    .listOfCountryNamesByCode()
+                    .getTCountryCodeAndName()
+                    .stream()
+                    .map(CountryMapper.MAPPER::convert)
+                    .toList();
+        } catch (WebServerException ex) {
+            extracted(ex);
+
+            throw new UnknownServiceException(ex);
+        }
+        return objectMapper.valueToTree(countries);
     }
 
-    private ResponseDto getResponseDto(RequestDto request, JsonNode countryInfoNode) {
-        ResponseDto responseDto = new ResponseDto();
-        responseDto.setService(request.getService());
-        responseDto.setVersion(request.getVersion());
-        responseDto.setResponse(countryInfoNode);
-        return responseDto;
+    private void extracted(WebServerException ex) {
+        if (ex.getCause() instanceof SocketTimeoutException) {
+            throw new ResponseTimeoutException(ex);
+        }
+        if (ex.getCause() instanceof ConnectException) {
+            throw new RequestCouldNotSendException(ex);
+        }
     }
 }
