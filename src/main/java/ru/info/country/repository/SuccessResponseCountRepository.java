@@ -1,9 +1,11 @@
 package ru.info.country.repository;
 
+import org.springframework.data.jdbc.repository.query.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 import ru.info.country.entity.SuccessResponseCount;
 
+import java.util.List;
 import java.util.UUID;
 
 @Repository
@@ -29,4 +31,14 @@ public interface SuccessResponseCountRepository extends CrudRepository<SuccessRe
     String UPDATE_INCREMENT_PAID_ROW = """
             UPDATE success_response_count SET paid_success_response_count = ?, modified_date = now() WHERE id= ?
             """;
+
+    @Query("""
+            SELECT service, 
+            version, 
+            cached_success_response_count, 
+            paid_success_response_count
+            FROM success_response_count
+            ORDER BY version, service
+            """)
+    List<SuccessResponseCount> getServiceGroupedList();
 }
